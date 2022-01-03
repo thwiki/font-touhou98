@@ -2,6 +2,7 @@
 
 [![NPM](https://img.shields.io/npm/v/font-touhou98)](https://www.npmjs.com/package/font-touhou98)
 ![License](https://img.shields.io/npm/l/font-touhou98)
+[![jsDelivr](https://data.jsdelivr.com/v1/package/npm/font-touhou98/badge?style=rounded)](https://www.jsdelivr.com/package/npm/font-touhou98)
 
 This is a font created to recreate text styles and icons from the Touhou Project PC98 games, assets from the following games are used:
 
