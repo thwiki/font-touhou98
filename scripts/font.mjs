@@ -1,13 +1,14 @@
 import path from "path";
-import fs from "fs";
+import { promises as fs } from "fs";
 import chalk from "chalk";
 import del from "del";
 import makeDir from "make-dir";
 import { webfont } from "webfont";
+import favicons from "favicons";
 import nunjucks from "nunjucks";
 import deepmerge from "deepmerge";
 
-function buildTemplateHTML(result) {
+function buildTemplateHTML(result, meta) {
 	const options = result.config;
 	if (options.templateHTML) {
 		const resolvedTemplateFilePath = path.resolve(options.templateHTML);
@@ -40,6 +41,7 @@ function buildTemplateHTML(result) {
 				fontPath: (
 					options.templateHTMLFontPath || options.templateFontPath
 				).replace(/\/?$/u, "/"),
+				meta: meta,
 			},
 		]);
 
@@ -50,6 +52,24 @@ function buildTemplateHTML(result) {
 
 (async () => {
 	console.log(chalk.green("Start building"));
+
+	console.log(chalk.green("Converting favicon"));
+
+	const favicon = await favicons("templates/favicon.svg", {
+		appName: "touhou98",
+		dir: "ltr",
+		lang: "en-US",
+		background: "#000",
+		theme_color: "#fff",
+		icons: {
+			android: true,
+			appleIcon: true,
+			appleStartup: false,
+			favicons: true,
+			windows: false,
+			yandex: false,
+		},
+	});
 
 	const result = buildTemplateHTML(
 		await webfont({
@@ -63,7 +83,8 @@ function buildTemplateHTML(result) {
 			templateHTMLFontPath: "./",
 			sort: false,
 			fixedWidth: false,
-		})
+		}),
+		favicon.html.join("")
 	);
 
 	const { fontName } = result.config;
@@ -75,6 +96,19 @@ function buildTemplateHTML(result) {
 	await makeDir(dest);
 
 	console.log(chalk.green("Saving files"));
+
+	for (const image of favicon.images) {
+		const name = path.join(dest, image.name);
+		await fs.writeFile(name, image.contents);
+		console.log(chalk.green(`  Saved `) + chalk.yellow(name));
+	}
+	for (const file of favicon.files) {
+		const name = path.join(dest, file.name);
+		await fs.writeFile(name, file.contents, {
+			encoding: "utf-8",
+		});
+		console.log(chalk.green(`  Saved `) + chalk.yellow(name));
+	}
 
 	await Promise.all(
 		Object.keys(result).map(async (type) => {
@@ -97,7 +131,7 @@ function buildTemplateHTML(result) {
 				file = path.join(dest, `${fontName}.${type}`);
 			}
 
-			await fs.promises.writeFile(file, content);
+			await fs.writeFile(file, content);
 
 			console.log(chalk.green(`  Saved `) + chalk.yellow(file));
 		})
