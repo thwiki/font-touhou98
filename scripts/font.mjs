@@ -89,21 +89,25 @@ function buildTemplateHTML(result, meta) {
 
 	const { fontName } = result.config;
 	const dest = result.config.dest;
+	const web = "web/";
 
 	console.log(chalk.green("Removing previous build"));
 
 	await del(dest);
 	await makeDir(dest);
+	await del(web);
+	await makeDir(web);
 
 	console.log(chalk.green("Saving files"));
 
 	for (const image of favicon.images) {
-		const name = path.join(dest, image.name);
+		const name = path.join(web, image.name);
+		if (image.contents.length > 2000) continue;
 		await fs.writeFile(name, image.contents);
 		console.log(chalk.green(`  Saved `) + chalk.yellow(name));
 	}
 	for (const file of favicon.files) {
-		const name = path.join(dest, file.name);
+		const name = path.join(web, file.name);
 		await fs.writeFile(name, file.contents, {
 			encoding: "utf-8",
 		});
@@ -124,7 +128,7 @@ function buildTemplateHTML(result, meta) {
 			let file = null;
 
 			if (type === "templateHTML") {
-				file = path.join(dest, `index.html`);
+				file = path.join(web, `index.html`);
 			} else if (type === "template") {
 				file = path.join(dest, `${fontName}.css`);
 			} else {

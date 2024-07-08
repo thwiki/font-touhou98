@@ -4,6 +4,7 @@
 /tmp
 /out-tsc
 /svg
+/web
 
 # dependencies
 /node_modules
